@@ -1,5 +1,19 @@
+# inverter.py
+import random
+
 class Inverter:
-    def __init__(self, inverter_max_output_limit: float, inverter_failure_frequency:float, inverter_failure_duration:int):
-        self._output_limit = inverter_max_output_limit
-        self._failure_frequency = inverter_failure_frequency
-        self._failure_duration = inverter_failure_duration
+    def __init__(self, output_limit, failure_freq, failure_duration):
+        self._limit = output_limit
+        self._failure_freq = failure_freq
+        self._failure_duration = failure_duration
+        self._down_until = -1
+
+    def is_down(self, env):
+        if env.now < self._down_until:
+            return True
+
+        if random.random() < self._failure_freq / (24 * 60):
+            self._down_until = env.now + self._failure_duration * 60
+            return True
+
+        return False

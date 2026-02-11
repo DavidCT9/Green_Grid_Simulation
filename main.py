@@ -4,6 +4,14 @@ import simpy
 import pandas as pd
 from pyarrow import int32
 
+
+from utils import (
+    hour_of_day,
+    day_of_year,
+    season_from_day,
+    daily_cloud_coverage,
+)
+
 # CONFIG
 LOG_HOUR = pd.DataFrame({
     "Battery state of charge" : pd.Series(dtype=float),
@@ -36,22 +44,62 @@ PRODUCE_PRIORITY = ["EXPORT_UP_TO_THRESHOLD", "BATTERY", "HOUSE_LOAD"] # Export 
 
 CLOUD_COVERAGE = 0.0 # parameter (0-1) that reduces solar generation proportionally.
 # (Clear, Partly Cloudy, Mostly Cloudy, Overcast) - These are the probability factors based on seasons
-Spring = [0.1, 0.3, 0.4, 0.2]
-Summer = [0.05, 0.15, 0.3, 0.5]
-Fall = [0.2, 0.4, 0.3, 0.1]
-Winter = [0.3, 0.4, 0.2, 0.1]
+SEASON_CLOUD_PROBS = {
+    "Spring": [0.1, 0.3, 0.4, 0.2],
+    "Summer": [0.05, 0.15, 0.3, 0.5],
+    "Fall":   [0.2, 0.4, 0.3, 0.1],
+    "Winter": [0.3, 0.4, 0.2, 0.1],
+}
 
 SOLAR_PANEL_CAPACITY = 10.0 # kW
 # Load profile characteristics (base load, peak load, variability)
-SIM_DURATION = 7 # days
-TIME_STEP = 60 # minutes
+SIM_DURATION_DAY = 30 # days
+SIM_DURATION_MIN = SIM_DURATION_DAY * 24 * 60
+TIME_STEP_MIN = 60 # minutes
 INVERTER_FAILURE_FREQUENCY = 0.005 # energy inverter should have a random failure event that occurs on average once every 200 days (0.5%)
 INVERTER_FAILURE_DURATION = random.randint(4,72) #  lasting for a random duration between 4 and 72 hours. During this failure, solar generation is zero regardless of conditions.
 SIM_START_DAY = 0 # (1st Jan) # -- Day fo the year to start sim -- Season/month for simulation
 COST_ENERGY_EXPORTED = 0.5 # cents per kWh
 COST_ENERGY_IMPORTED = 0.75 # cents per kWh
-SIM_TOTAL_DAYS = 30 # Your simulation should run for at least a total of 30 simulated days (720 hours)
+IS_ZERO_EXPORT = False
 
 
-# sun_angle = time_of_day * (math.pi / 12)
-# generation = PEAK_SOLAR_GENERATION * math.sin(sun_angle)
+def home_energy_system(env, battery, panel, load, inverter):
+    current_day = -1
+    cloud = 0.0
+
+    while True:
+        hour = hour_of_day(env)
+        day = day_of_year(env, SIM_START_DAY)
+
+        if day != current_day:
+            current_day = day
+            season = season_from_day(day)
+            cloud = daily_cloud_coverage(SEASON_CLOUD_PROBS[season])
+        inverter_down = inverter.is_down(env)
+        solar_kw = panel.generate(hour, cloud, INVERTER_MAX_OUTPUT_LIMIT, inverter_down)
+        load_kw = load.demand(hour)
+
+        solar_kwh = solar_kw
+        load_kwh = load_kw
+
+        net = solar_kwh - load_kwh
+
+        grid_import = grid_export = unmet = 0.0
+
+        if net >= 0:
+            charged = battery.charge(net)
+            grid_export = max(0.0, net - charged)
+        else:
+            supplied = battery.discharge(-net)
+            deficit = -net - supplied
+            if deficit > 0:
+                grid_import = deficit
+                unmet = deficit
+
+        LOG_HOUR.loc[len(LOG_HOUR)] = [
+            battery._soc, solar_kwh, load_kwh,
+            grid_import, grid_export, unmet > 0
+        ]
+
+        yield env.timeout(TIME_STEP_MIN)

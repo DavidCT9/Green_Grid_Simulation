@@ -2,7 +2,6 @@ import random
 
 import simpy
 import pandas as pd
-import battery
 import solar_panel
 import house_load
 import grid

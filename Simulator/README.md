@@ -1,4 +1,4 @@
-# Green Grid Simulation
+#  
 
 A digital twin simulation of a solar-equipped home energy system, designed to model energy flow, storage, and costs under various conditions and management strategies.
 

@@ -7,12 +7,20 @@ import house_load
 import grid
 import inverter
 import battery
+from pathlib import Path
 from utils import (
     hour_of_day,
     day_of_year,
     season_from_day,
     daily_cloud_coverage,
 )
+
+# Get the base directory where this script is located
+BASE_DIR = Path(__file__).resolve().parent
+
+DEFAULT_CONFIG_PATH = BASE_DIR.joinpath("config_default.json")
+USER_CONFIG_PATH = BASE_DIR.joinpath("config_user.json")
+LOG_FILE_PATH = BASE_DIR.joinpath("log.csv")
 
 # DataFrame for logging results
 LOG_DF = pd.DataFrame({
@@ -72,7 +80,7 @@ def get_user_config():
         choice = input("Enter your choice (1 or 2): ").strip()
         
         if choice == '1':
-            config = load_config_from_json("config_default.json")
+            config = load_config_from_json(DEFAULT_CONFIG_PATH)
             if config:
                 print("Loaded default configuration.")
                 return config
@@ -81,7 +89,7 @@ def get_user_config():
                 exit(1)
         
         elif choice == '2':
-            config = load_config_from_json("config_user.json")
+            config = load_config_from_json(USER_CONFIG_PATH)
             if config:
                 print("Loaded custom configuration from config_user.json")
                 return config
@@ -219,7 +227,9 @@ def home_energy_system(env, battery, panel, load, inverter, grid, priorities, co
                 
             yield env.timeout(config["TIME_STEP_MIN"])
 
-    LOG_DF.to_csv("log.csv", index=False)
+    # Save log file using BASE_DIR path
+    LOG_DF.to_csv(LOG_FILE_PATH, index=False)
+    print(f"Log saved to: {LOG_FILE_PATH}")
 
 def write_to_df(battery, solar_kwh, load_kwh, grid_import, grid_export, unmet, 
                 revenue_energy_exported, cost_energy_imported, daily_solar, 

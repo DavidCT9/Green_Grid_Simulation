@@ -1,17 +1,23 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
+from pathlib import Path
 
-LOG_FILE = "log.csv"
+# Get the base directory where this script is located
+BASE_DIR = Path(__file__).resolve().parent
+
+LOG_FILE_PATH = BASE_DIR.joinpath("log.csv")
+SOC_CHART_PATH = BASE_DIR.joinpath("report_soc.png")
+ENERGY_CHART_PATH = BASE_DIR.joinpath("report_energy.png")
+FINANCIAL_CHART_PATH = BASE_DIR.joinpath("report_financial.png")
 
 def generate_report():
-    if not os.path.exists(LOG_FILE):
-        print(f"Error: {LOG_FILE} not found. Please run the simulation first (main.py).")
+    if not LOG_FILE_PATH.exists():
+        print(f"Error: {LOG_FILE_PATH} not found. Please run the simulation first (main.py).")
         return
 
     print("Loading simulation log...")
-    df = pd.read_csv(LOG_FILE)
+    df = pd.read_csv(LOG_FILE_PATH)
     
     # Detect Logic Frequency
     # If the simulation is ~30 days, Daily logs will have ~30 rows. Hourly ~720 rows.
@@ -92,8 +98,9 @@ def generate_report():
     plt.axhline(y=0, color='r', linestyle='--')
     plt.axhline(y=100, color='r', linestyle='--')
     plt.legend()
-    plt.savefig("report_soc.png")
-    print("Saved chart: report_soc.png")
+    plt.savefig(SOC_CHART_PATH)
+    print(f"Saved chart: {SOC_CHART_PATH}")
+    plt.close()  # Close the figure to free memory
     
     # 2. Energy Balance (Line Chart)
     plt.figure(figsize=(10, 5))
@@ -112,16 +119,18 @@ def generate_report():
     plt.xlabel("Time Step")
     plt.ylabel("Energy (kWh)")
     plt.legend()
-    plt.savefig("report_energy.png")
-    print("Saved chart: report_energy.png")
+    plt.savefig(ENERGY_CHART_PATH)
+    print(f"Saved chart: {ENERGY_CHART_PATH}")
+    plt.close()  # Close the figure to free memory
 
     # 3. Financial Overview (Bar Chart)
     plt.figure(figsize=(6, 6))
     plt.bar(["Revenue", "Cost"], [report_data["total_revenue"], report_data["total_cost"]], color=["green", "red"])
     plt.title("Financial Overview")
     plt.ylabel("Currency ($)")
-    plt.savefig("report_financial.png")
-    print("Saved chart: report_financial.png")
+    plt.savefig(FINANCIAL_CHART_PATH)
+    print(f"Saved chart: {FINANCIAL_CHART_PATH}")
+    plt.close()  # Close the figure to free memory
 
     print("\nReporting complete.")
 

@@ -1,23 +1,40 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import json
 from pathlib import Path
 
 # Get the base directory where this script is located
 BASE_DIR = Path(__file__).resolve().parent
 
 LOG_FILE_PATH = BASE_DIR.joinpath("log.csv")
+LOG_JSON_PATH = BASE_DIR.joinpath("log.json")
+LOG_SUMMARY_PATH = BASE_DIR.joinpath("log_summary.json")
 SOC_CHART_PATH = BASE_DIR.joinpath("report_soc.png")
 ENERGY_CHART_PATH = BASE_DIR.joinpath("report_energy.png")
 FINANCIAL_CHART_PATH = BASE_DIR.joinpath("report_financial.png")
 
 def generate_report():
-    if not LOG_FILE_PATH.exists():
-        print(f"Error: {LOG_FILE_PATH} not found. Please run the simulation first (main.py).")
+    # Try to load JSON first, fall back to CSV
+    df = None
+    if LOG_JSON_PATH.exists():
+        print("Loading simulation log from JSON...")
+        try:
+            with open(LOG_JSON_PATH, 'r') as f:
+                log_data = json.load(f)
+            df = pd.DataFrame(log_data)
+            print("Successfully loaded JSON log.")
+        except Exception as e:
+            print(f"Error loading JSON: {e}")
+    
+    if df is None and LOG_FILE_PATH.exists():
+        print("Loading simulation log from CSV...")
+        df = pd.read_csv(LOG_FILE_PATH)
+        print("Successfully loaded CSV log.")
+    
+    if df is None:
+        print(f"Error: No log files found. Please run the simulation first (main.py).")
         return
-
-    print("Loading simulation log...")
-    df = pd.read_csv(LOG_FILE_PATH)
     
     # Detect Logic Frequency
     # If the simulation is ~30 days, Daily logs will have ~30 rows. Hourly ~720 rows.

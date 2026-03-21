@@ -21,6 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_CONFIG_PATH = BASE_DIR.joinpath("config_default.json")
 USER_CONFIG_PATH = BASE_DIR.joinpath("config_user.json")
 LOG_FILE_PATH = BASE_DIR.joinpath("log.csv")
+LOG_JSON_PATH = BASE_DIR.joinpath("log.json")
 
 # DataFrame for logging results
 LOG_DF = pd.DataFrame({
@@ -118,7 +119,8 @@ def home_energy_system(env, battery, panel, load, inverter, grid, priorities, co
     print(f"You have chosen {priorities[priority]} \nStarting Simulation...")
     
     current_day = -1
-    cloud = 0.0
+    current_season = None
+    daily_cloud_base = 0.0
     daily_solar = 0.0
     revenue_energy_exported = 0.0
     cost_energy_imported = 0.0
@@ -135,15 +137,21 @@ def home_energy_system(env, battery, panel, load, inverter, grid, priorities, co
         for j in range(24):
             hour = hour_of_day(env)
             day = day_of_year(env, config["SIM_START_DAY"])
+            
+            # Calculate day of week (0=Monday, 6=Sunday)
+            # Assuming day 0 is Jan 1st, 2024 (which was a Monday)
+            day_of_week = day % 7
 
             if day != current_day:
                 current_day = day
-                season = season_from_day(day)
-                cloud = daily_cloud_coverage(SEASON_CLOUD_PROBS[season])
+                current_season = season_from_day(day)
+                daily_cloud_base = daily_cloud_coverage(SEASON_CLOUD_PROBS[current_season])
             
             inverter_down = inverter.is_down(env)
-            solar_kw = panel.generate(hour, cloud, config["INVERTER_MAX_OUTPUT_LIMIT"], inverter_down)
-            load_kw = load.demand(hour)
+            # Pass daily_cloud_base for hourly cloud variation
+            solar_kw = panel.generate(hour, daily_cloud_base, config["INVERTER_MAX_OUTPUT_LIMIT"], inverter_down)
+            # Pass day_of_week and season to demand
+            load_kw = load.demand(hour, day_of_week, current_season)
 
             solar_kwh = solar_kw
             load_kwh = load_kw
@@ -227,9 +235,73 @@ def home_energy_system(env, battery, panel, load, inverter, grid, priorities, co
                 
             yield env.timeout(config["TIME_STEP_MIN"])
 
-    # Save log file using BASE_DIR path
+    # Save log file in CSV format
     LOG_DF.to_csv(LOG_FILE_PATH, index=False)
     print(f"Log saved to: {LOG_FILE_PATH}")
+    
+    # Save log file in JSON format
+    save_log_to_json()
+    print(f"Log saved to: {LOG_JSON_PATH}")
+
+def save_log_to_json():
+    """Convert DataFrame to JSON and save"""
+    # Convert DataFrame to list of dictionaries
+    log_data = LOG_DF.to_dict(orient='records')
+    
+    for record in log_data:
+        if 'Unmet load' in record:
+            record['Unmet load'] = bool(record['Unmet load'])
+        if 'Inverter status' in record:
+            record['Inverter status'] = bool(record['Inverter status'])
+    
+    # Save to JSON file
+    with open(LOG_JSON_PATH, 'w') as f:
+        json.dump(log_data, f, indent=2, default=str)
+    
+    save_summary_to_json(log_data)
+
+def save_summary_to_json(log_data):
+    """Save summary statistics in a separate JSON file for quick access"""
+    if not log_data:
+        return
+    
+    # Calculate summary statistics
+    battery_soc = [record['Battery state of charge'] for record in log_data]
+    solar_gen = [record['Solar generation'] for record in log_data]
+    load_demand = [record['Load demand'] for record in log_data]
+    grid_import = [record['Grid import'] for record in log_data]
+    grid_export = [record['Grid export'] for record in log_data]
+    revenue = [record['Revenue from exported energy'] for record in log_data]
+    cost = [record['Cost of imported energy'] for record in log_data]
+    
+    summary = {
+        "total_hours": len(log_data),
+        "simulation_days": len(log_data) // 24 if len(log_data) > 24 else 1,
+        "battery": {
+            "avg_soc": sum(battery_soc) / len(battery_soc),
+            "min_soc": min(battery_soc),
+            "max_soc": max(battery_soc)
+        },
+        "energy": {
+            "total_solar": sum(solar_gen),
+            "total_load": sum(load_demand),
+            "total_grid_import": sum(grid_import),
+            "total_grid_export": sum(grid_export),
+            "net_grid_import": sum(grid_import) - sum(grid_export)
+        },
+        "financial": {
+            "total_revenue": sum(revenue),
+            "total_cost": sum(cost),
+            "net_profit": sum(revenue) - sum(cost)
+        },
+        "unmet_load_count": sum(1 for record in log_data if record['Unmet load']),
+        "inverter_down_ticks": sum(1 for record in log_data if record['Inverter status'])
+    }
+    
+    summary_path = BASE_DIR.joinpath("log_summary.json")
+    with open(summary_path, 'w') as f:
+        json.dump(summary, f, indent=2)
+    print(f"Summary saved to: {summary_path}")
 
 def write_to_df(battery, solar_kwh, load_kwh, grid_import, grid_export, unmet, 
                 revenue_energy_exported, cost_energy_imported, daily_solar, 

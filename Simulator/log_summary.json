@@ -1,0 +1,23 @@
+{
+  "total_hours": 720,
+  "simulation_days": 30,
+  "battery": {
+    "avg_soc": 31.66653642574772,
+    "min_soc": 5.0,
+    "max_soc": 100.0
+  },
+  "energy": {
+    "total_solar": 508.38175437647914,
+    "total_load": 765.8226348713647,
+    "total_grid_import": 375.3448781357206,
+    "total_grid_export": 100.11271332625172,
+    "net_grid_import": 275.2321648094689
+  },
+  "financial": {
+    "total_revenue": 50.05635666312586,
+    "total_cost": 281.50865860179044,
+    "net_profit": -231.4523019386646
+  },
+  "unmet_load_count": 0,
+  "inverter_down_ticks": 1
+}

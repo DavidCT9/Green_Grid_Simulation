@@ -1,56 +1,14 @@
 import random
 import json
 import simpy
-import pandas as pd
-import solar_panel
-import house_load
-import grid
-import inverter
-import battery
 from pathlib import Path
-from utils import (
-    hour_of_day,
-    day_of_year,
-    season_from_day,
-    daily_cloud_coverage,
-)
+from household_simulator import HouseholdSimulator
+from utils import season_from_day, SEASON_CLOUD_PROBS  # Need to export SEASON_CLOUD_PROBS
 
-# Get the base directory where this script is located
 BASE_DIR = Path(__file__).resolve().parent
-
 DEFAULT_CONFIG_PATH = BASE_DIR.joinpath("config_default.json")
 USER_CONFIG_PATH = BASE_DIR.joinpath("config_user.json")
-LOG_FILE_PATH = BASE_DIR.joinpath("log.csv")
-LOG_JSON_PATH = BASE_DIR.joinpath("log.json")
-
-# DataFrame for logging results
-LOG_DF = pd.DataFrame({
-    "Battery state of charge": pd.Series(dtype=float),
-    "Solar generation": pd.Series(dtype=float),
-    "Load demand": pd.Series(dtype=float),
-    "Grid import": pd.Series(dtype=float),
-    "Grid export": pd.Series(dtype=float),
-    "Unmet load": pd.Series(dtype=bool),
-    "Revenue from exported energy": pd.Series(dtype=float),
-    "Cost of imported energy": pd.Series(dtype=float),
-    "Daily solar generation": pd.Series(dtype=float),
-    "Daily revenue": pd.Series(dtype=float),
-    "Daily import": pd.Series(dtype=float),
-    "Daily export": pd.Series(dtype=float),
-    "Daily cost": pd.Series(dtype=float),
-    "Daily unmet load (count)": pd.Series(dtype=float),
-    "Daily load": pd.Series(dtype=float),
-    "Inverter status": pd.Series(dtype=bool)
-})
-
-PRIORITIES = {0: "LOAD_PRIORITY", 1: "CHARGE_PRIORITY", 2: "PRODUCE_PRIORITY"}
-
-SEASON_CLOUD_PROBS = {
-    "Spring": [0.1, 0.3, 0.4, 0.2],
-    "Summer": [0.05, 0.15, 0.3, 0.5],
-    "Fall": [0.2, 0.4, 0.3, 0.1],
-    "Winter": [0.3, 0.4, 0.2, 0.1],
-}
+HOUSES_CONFIG_PATH = BASE_DIR.joinpath("config_houses.json")
 
 def load_config_from_json(file_path):
     """Load configuration from a JSON file"""
@@ -71,286 +29,175 @@ def load_config_from_json(file_path):
         print(f"Error: {file_path} is not valid JSON.")
         return None
 
-def get_user_config():
-    """Get configuration from JSON files"""
-    print("\n--- Configuration Selection ---")
-    print("1: Use Default Configuration (config_default.json)")
-    print("2: Use Custom Configuration (config_user.json)")
+def load_houses_config():
+    """Load household configuration"""
+    if not HOUSES_CONFIG_PATH.exists():
+        print(f"Error: {HOUSES_CONFIG_PATH} not found. Creating default...")
+        create_default_houses_config()
     
-    while True:
-        choice = input("Enter your choice (1 or 2): ").strip()
-        
-        if choice == '1':
-            config = load_config_from_json(DEFAULT_CONFIG_PATH)
-            if config:
-                print("Loaded default configuration.")
-                return config
-            else:
-                print("Failed to load default config. Exiting.")
-                exit(1)
-        
-        elif choice == '2':
-            config = load_config_from_json(USER_CONFIG_PATH)
-            if config:
-                print("Loaded custom configuration from config_user.json")
-                return config
-            else:
-                print("Failed to load custom config. Please check the file.")
-                continue
-        
-        else:
-            print("Invalid choice. Please enter 1 or 2.")
+    try:
+        with open(HOUSES_CONFIG_PATH, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading houses config: {e}")
+        return None
 
-def home_energy_system(env, battery, panel, load, inverter, grid, priorities, config):
-    """Main simulation function"""
-    for i in range(3):
-        print(f"{i}: {priorities[i]}")
+def create_default_houses_config():
+    """Create default household configuration"""
+    default_config = {
+        "households": {
+            "studio": {"count": 20, "base_load": 0.2, "spikes_max": 2.5},
+            "small_family": {"count": 50, "base_load": 0.4, "spikes_max": 4.5},
+            "large_family": {"count": 30, "base_load": 0.8, "spikes_max": 7.0}
+        },
+        "wealth_distribution": {
+            "low": 0.20,
+            "middle": 0.50,
+            "high": 0.25,
+            "luxury": 0.05
+        },
+        "wealth_multipliers": {
+            "low": 0.8,
+            "middle": 1.0,
+            "high": 1.2,
+            "luxury": 1.5
+        }
+    }
+    
+    with open(HOUSES_CONFIG_PATH, "w") as f:
+        json.dump(default_config, f, indent=2)
+    print(f"Created default household configuration: {HOUSES_CONFIG_PATH}")
+
+def generate_households(houses_config):
+    """Generate list of households based on configuration"""
+    households = []
+    household_id = 1
+    
+    wealth_levels = list(houses_config["wealth_distribution"].keys())
+    wealth_probs = list(houses_config["wealth_distribution"].values())
+    
+    for house_type, params in houses_config["households"].items():
+        count = params["count"]
+        for _ in range(count):
+            wealth_level = random.choices(wealth_levels, weights=wealth_probs)[0]
+            households.append({
+                "id": household_id,
+                "type": house_type,
+                "wealth_level": wealth_level,
+                "base_load": params["base_load"],
+                "spikes_max": params["spikes_max"]
+            })
+            household_id += 1
+    
+    return households
+
+def save_general_info(households, config, houses_config):
+    """Save general information about the simulation run"""
+    summary_dir = BASE_DIR.joinpath("summary")
+    summary_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Count households by type and wealth
+    type_counts = {}
+    wealth_counts = {}
+    for h in households:
+        type_counts[h["type"]] = type_counts.get(h["type"], 0) + 1
+        wealth_counts[h["wealth_level"]] = wealth_counts.get(h["wealth_level"], 0) + 1
+    
+    general_info = {
+        "total_houses": len(households),
+        "simulation_days": config["SIM_DURATION_DAY"],
+        "time_step_minutes": config["TIME_STEP_MIN"],
+        "households_by_type": type_counts,
+        "households_by_wealth": wealth_counts,
+        "wealth_distribution_config": houses_config["wealth_distribution"],
+        "wealth_multipliers": houses_config["wealth_multipliers"],
+        "simulation_config": {
+            "battery_size_kwh": config["BATTERY_SIZE"],
+            "peak_solar_kw": config["PEAK_SOLAR_GENERATION"],
+            "inverter_limit_kw": config["INVERTER_MAX_OUTPUT_LIMIT"],
+            "grid_export_limit_kw": config["GRID_MAX_EXPORT_LIMIT"],
+            "grid_import_limit_kw": config["GRID_MAX_IMPORT_LIMIT"]
+        }
+    }
+    
+    info_path = summary_dir.joinpath("general_info.json")
+    with open(info_path, "w") as f:
+        json.dump(general_info, f, indent=2)
+    print(f"General info saved to: {info_path}")
+
+if __name__ == "__main__":
+    print("\n--- Loading Configurations ---")
+    
+    # Get base simulation config
+    base_config = load_config_from_json(DEFAULT_CONFIG_PATH)
+    if not base_config:
+        print("Failed to load base configuration. Exiting.")
+        exit(1)
+    
+    # Load household configuration
+    houses_config = load_houses_config()
+    if not houses_config:
+        print("Failed to load household configuration. Exiting.")
+        exit(1)
+    
+    # Generate households
+    households = generate_households(houses_config)
+    print(f"\nGenerated {len(households)} households:")
+    type_counts = {}
+    for h in households:
+        type_counts[h["type"]] = type_counts.get(h["type"], 0) + 1
+    for house_type, count in type_counts.items():
+        print(f"  - {house_type}: {count}")
+    
+    save_general_info(households, base_config, houses_config)
+    
+    # Get priority from user
+    print("\n" + "="*50)
+    print("PRIORITY SELECTION (applies to all households)")
+    print("0: LOAD_PRIORITY - Serve load first, then charge battery, then export")
+    print("1: CHARGE_PRIORITY - Charge battery first, then serve load, then export")
+    print("2: PRODUCE_PRIORITY - Export first, then charge, then serve load")
+    print("="*50)
     
     while True:
         try:
             priority = int(input("Enter your priority (0, 1, or 2): "))
-            if priority in priorities:
+            if priority in [0, 1, 2]:
                 break
             else:
                 print("Please enter 0, 1, or 2.")
         except ValueError:
             print("Please enter a valid number.")
     
-    print(f"You have chosen {priorities[priority]} \nStarting Simulation...")
-    
-    current_day = -1
-    current_season = None
-    daily_cloud_base = 0.0
-    daily_solar = 0.0
-    revenue_energy_exported = 0.0
-    cost_energy_imported = 0.0
-    daily_import = 0.0
-    daily_export = 0.0
-    daily_cost = 0.0
-    daily_unmet = 0.0
-    daily_revenue = 0.0
-    daily_load = 0.0
-
-    sim_duration_days = config["SIM_DURATION_DAY"]
-    
-    for i in range(sim_duration_days):
-        for j in range(24):
-            hour = hour_of_day(env)
-            day = day_of_year(env, config["SIM_START_DAY"])
-            
-            # Calculate day of week (0=Monday, 6=Sunday)
-            # Assuming day 0 is Jan 1st, 2024 (which was a Monday)
-            day_of_week = day % 7
-
-            if day != current_day:
-                current_day = day
-                current_season = season_from_day(day)
-                daily_cloud_base = daily_cloud_coverage(SEASON_CLOUD_PROBS[current_season])
-            
-            inverter_down = inverter.is_down(env)
-            # Pass daily_cloud_base for hourly cloud variation
-            solar_kw = panel.generate(hour, daily_cloud_base, config["INVERTER_MAX_OUTPUT_LIMIT"], inverter_down)
-            # Pass day_of_week and season to demand
-            load_kw = load.demand(hour, day_of_week, current_season)
-
-            solar_kwh = solar_kw
-            load_kwh = load_kw
-            grid_import = grid_export = unmet = 0.0
-
-            if priority == 0:  # Load Priority
-                net = solar_kwh - load_kwh
-                if net >= 0:
-                    charged = battery.charge(net)
-                    if grid._is_zero_export and battery._soc == 100:
-                        grid_export = 0.0
-                    else:
-                        grid_export = max(0.0, net - charged)
-                else:
-                    supplied = battery.discharge(-net)
-                    deficit = -net - supplied
-                    if deficit > 0:
-                        grid_import = min(deficit, grid._import_limit)
-                        unmet = deficit - grid_import
-            
-            elif priority == 1:  # Charge Priority
-                charge_remainder = solar_kwh - battery.charge(solar_kwh)
-                net_after_battery = charge_remainder - load_kwh
-
-                if net_after_battery >= 0:
-                    if grid._is_zero_export and battery._soc == 100:
-                        grid_export = 0.0
-                    else:
-                        grid_export = grid.export(net_after_battery)
-                else:
-                    grid_import = min(-net_after_battery, grid._import_limit)
-                    unmet = -net_after_battery - grid_import
-
-            elif priority == 2:  # Produce Priority
-                if grid._is_zero_export and battery._soc == 100:
-                    grid_export = 0.0
-                else:
-                    grid_export = grid.export(solar_kwh)
-                
-                remainder = solar_kwh - grid_export
-                charged = battery.charge(remainder)
-                reminder_for_load = remainder - charged
-                net_deficit = max(0, load_kwh - reminder_for_load)
-
-                provided = battery.discharge(net_deficit)
-                still_needed = net_deficit - provided
-                grid_import = min(still_needed, grid._import_limit)
-                unmet = still_needed - grid_import
-
-            revenue_energy_exported = grid_export * config["COST_ENERGY_EXPORTED"]
-            cost_energy_imported = grid_import * config["COST_ENERGY_IMPORTED"]
-            total_revenue = revenue_energy_exported - cost_energy_imported
-            
-            daily_solar += solar_kwh
-            daily_import += grid_import
-            daily_export += grid_export
-            daily_revenue += total_revenue
-            daily_cost += cost_energy_imported
-            daily_unmet += 1 if unmet > 0 else 0
-            daily_load += load_kwh
-            
-            log_freq = config["LOG_FREQUENCY"]
-            if j == 23 and log_freq:
-                write_to_df(battery, solar_kwh, load_kwh, grid_import, grid_export, unmet, 
-                          revenue_energy_exported, cost_energy_imported, daily_solar, 
-                          daily_revenue, daily_import, daily_export, daily_cost, 
-                          daily_unmet, daily_load, inverter_down)
-                # Reset accumulators after logging daily values
-                daily_solar = 0.0
-                daily_import = 0.0
-                daily_export = 0.0
-                daily_cost = 0.0
-                daily_revenue = 0.0
-                daily_unmet = 0.0
-                daily_load = 0.0
-            elif not log_freq:
-                write_to_df(battery, solar_kwh, load_kwh, grid_import, grid_export, unmet, 
-                          revenue_energy_exported, cost_energy_imported, daily_solar, 
-                          daily_revenue, daily_import, daily_export, daily_cost, 
-                          daily_unmet, daily_load, inverter_down)
-                
-            yield env.timeout(config["TIME_STEP_MIN"])
-
-    # Save log file in CSV format
-    LOG_DF.to_csv(LOG_FILE_PATH, index=False)
-    print(f"Log saved to: {LOG_FILE_PATH}")
-    
-    # Save log file in JSON format
-    save_log_to_json()
-    print(f"Log saved to: {LOG_JSON_PATH}")
-
-def save_log_to_json():
-    """Convert DataFrame to JSON and save"""
-    # Convert DataFrame to list of dictionaries
-    log_data = LOG_DF.to_dict(orient='records')
-    
-    for record in log_data:
-        if 'Unmet load' in record:
-            record['Unmet load'] = bool(record['Unmet load'])
-        if 'Inverter status' in record:
-            record['Inverter status'] = bool(record['Inverter status'])
-    
-    # Save to JSON file
-    with open(LOG_JSON_PATH, 'w') as f:
-        json.dump(log_data, f, indent=2, default=str)
-    
-    save_summary_to_json(log_data)
-
-def save_summary_to_json(log_data):
-    """Save summary statistics in a separate JSON file for quick access"""
-    if not log_data:
-        return
-    
-    # Calculate summary statistics
-    battery_soc = [record['Battery state of charge'] for record in log_data]
-    solar_gen = [record['Solar generation'] for record in log_data]
-    load_demand = [record['Load demand'] for record in log_data]
-    grid_import = [record['Grid import'] for record in log_data]
-    grid_export = [record['Grid export'] for record in log_data]
-    revenue = [record['Revenue from exported energy'] for record in log_data]
-    cost = [record['Cost of imported energy'] for record in log_data]
-    
-    summary = {
-        "total_hours": len(log_data),
-        "simulation_days": len(log_data) // 24 if len(log_data) > 24 else 1,
-        "battery": {
-            "avg_soc": sum(battery_soc) / len(battery_soc),
-            "min_soc": min(battery_soc),
-            "max_soc": max(battery_soc)
-        },
-        "energy": {
-            "total_solar": sum(solar_gen),
-            "total_load": sum(load_demand),
-            "total_grid_import": sum(grid_import),
-            "total_grid_export": sum(grid_export),
-            "net_grid_import": sum(grid_import) - sum(grid_export)
-        },
-        "financial": {
-            "total_revenue": sum(revenue),
-            "total_cost": sum(cost),
-            "net_profit": sum(revenue) - sum(cost)
-        },
-        "unmet_load_count": sum(1 for record in log_data if record['Unmet load']),
-        "inverter_down_ticks": sum(1 for record in log_data if record['Inverter status'])
-    }
-    
-    summary_path = BASE_DIR.joinpath("log_summary.json")
-    with open(summary_path, 'w') as f:
-        json.dump(summary, f, indent=2)
-    print(f"Summary saved to: {summary_path}")
-
-def write_to_df(battery, solar_kwh, load_kwh, grid_import, grid_export, unmet, 
-                revenue_energy_exported, cost_energy_imported, daily_solar, 
-                daily_revenue, daily_import, daily_export, daily_cost, 
-                daily_unmet, daily_load, inverter_status):
-    """Write data to DataFrame"""
-    unmet_bool = True if unmet > 0 else False
-    LOG_DF.loc[len(LOG_DF)] = [
-        battery._soc, solar_kwh, load_kwh,
-        grid_import, grid_export, unmet_bool,
-        revenue_energy_exported, cost_energy_imported,
-        daily_solar, daily_revenue, daily_import, 
-        daily_export, daily_cost, daily_unmet, 
-        daily_load, inverter_status
-    ]
-
-if __name__ == "__main__":
-    # GET CONFIG
-    config = get_user_config()
-
-    # SETTING UP ENVIRONMENT
     env = simpy.Environment()
-
-    # INITIALIZING INSTANCES
-    battery = battery.Battery(
-        size_kwh=config["BATTERY_SIZE"], 
-        efficiency=config["BATTERY_ROUND_TRIP_EFFICIENCY"]
-    )
-    panel = solar_panel.SolarPanel(
-        capacity=config["PEAK_SOLAR_GENERATION"]
-    )
-    load = house_load.HouseLoad(
-        base_load=config["ENERGY_BASE_LOAD"], 
-        spikes_max=config["RANDOM_SPIKES_MAX"]
-    )
-    inverter = inverter.Inverter(
-        output_limit=config["INVERTER_MAX_OUTPUT_LIMIT"], 
-        failure_freq=config["INVERTER_FAILURE_FREQUENCY"], 
-        failure_duration=config["INVERTER_FAILURE_DURATION"]
-    )
-    grid = grid.Grid(
-        grid_max_export_limit=config["GRID_MAX_EXPORT_LIMIT"], 
-        is_zero_export=config["IS_ZERO_EXPORT"], 
-        grid_max_import_limit=config["GRID_MAX_IMPORT_LIMIT"]
-    )
-
-    # CALLING SIM METHOD
-    env.process(home_energy_system(env, battery, panel, load, inverter, grid, PRIORITIES, config))
+    
+    print(f"\nStarting simulation for {len(households)} households...")
+    print("This may take a while...\n")
+    
+    for household in households:
+        simulator = HouseholdSimulator(
+            household_id=household["id"],
+            household_type=household["type"],
+            wealth_level=household["wealth_level"],
+            config=base_config,
+            household_config=houses_config,
+            base_dir=BASE_DIR
+        )
+        simulator.initialize()
+        
+        env.process(simulator.run_simulation(
+            env, priority, SEASON_CLOUD_PROBS, base_config["SIM_START_DAY"]
+        ))
+    
     env.run()
-    print("Simulation finished. Generating report...")
+    
+    print("\n" + "="*50)
+    print("SIMULATION COMPLETE!")
+    print(f"Simulated {len(households)} households for {base_config['SIM_DURATION_DAY']} days")
+    print("Logs saved in: logs/")
+    print("Summary saved in: summary/")
+    print("="*50)
+    
+    print("\nGenerating aggregated report...")
     import reporting
-    reporting.generate_report()
+    reporting.generate_aggregated_report()

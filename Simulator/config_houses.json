@@ -1,0 +1,31 @@
+{
+    "households": {
+        "studio": {
+            "count": 20,
+            "base_load": 0.2,
+            "spikes_max": 2.5
+        },
+        "small_family": {
+            "count": 50,
+            "base_load": 0.4,
+            "spikes_max": 4.5
+        },
+        "large_family": {
+            "count": 30,
+            "base_load": 0.8,
+            "spikes_max": 7.0
+        }
+    },
+    "wealth_distribution": {
+        "low": 0.20,
+        "middle": 0.50,
+        "high": 0.25,
+        "luxury": 0.05
+    },
+    "wealth_multipliers": {
+        "low": 0.8,
+        "middle": 1.0,
+        "high": 1.2,
+        "luxury": 1.5
+    }
+}

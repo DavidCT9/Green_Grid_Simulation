@@ -3,6 +3,13 @@ import math
 import random
 from datetime import date, timedelta
 
+SEASON_CLOUD_PROBS = {
+    "Spring": [0.1, 0.3, 0.4, 0.2],
+    "Summer": [0.05, 0.15, 0.3, 0.5],
+    "Fall": [0.2, 0.4, 0.3, 0.1],
+    "Winter": [0.3, 0.4, 0.2, 0.1],
+}
+
 def hour_of_day(env):
     return (env.now / 60) % 24
 

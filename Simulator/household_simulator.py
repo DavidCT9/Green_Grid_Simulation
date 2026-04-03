@@ -95,16 +95,13 @@ class HouseholdSimulator:
                 )
                 load_kw = self.load.demand(sim_hour, day_of_week, current_season)
                 
-                # Energy flow logic (same as original)
                 grid_import, grid_export, unmet = self._process_energy_flow(
                     solar_kw, load_kw, priority
                 )
                 
-                # Financial calculations
                 revenue = grid_export * self.config["COST_ENERGY_EXPORTED"]
                 cost = grid_import * self.config["COST_ENERGY_IMPORTED"]
                 
-                # Accumulate daily values
                 daily_solar += solar_kw
                 daily_import += grid_import
                 daily_export += grid_export
@@ -114,24 +111,17 @@ class HouseholdSimulator:
                 daily_load += load_kw
                 
                 # Log data
-                log_freq = self.config["LOG_FREQUENCY"]
-                if (hour == 23 and log_freq) or not log_freq:
-                    self._log_data(
-                        self.battery._soc, solar_kw, load_kw,
-                        grid_import, grid_export, unmet,
-                        revenue, cost,
-                        daily_solar, daily_revenue, daily_import,
-                        daily_export, daily_cost, daily_unmet,
-                        daily_load, inverter_down
-                    )
-                    
-                    if hour == 23 and log_freq:
-                        daily_solar = daily_import = daily_export = 0.0
-                        daily_cost = daily_revenue = daily_unmet = daily_load = 0.0
-                
+                self._log_data(
+                    self.battery._soc, solar_kw, load_kw,
+                    grid_import, grid_export, unmet,
+                    revenue, cost,
+                    daily_solar, daily_revenue, daily_import,
+                    daily_export, daily_cost, daily_unmet,
+                    daily_load, inverter_down
+                )
+
                 yield env.timeout(self.config["TIME_STEP_MIN"])
         
-        # Save log for this household
         self._save_log()
     
     def _process_energy_flow(self, solar, load, priority):

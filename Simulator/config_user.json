@@ -1,5 +1,4 @@
 {
-    "LOG_FREQUENCY": false,
     "BATTERY_SIZE": 13.5,
     "PEAK_SOLAR_GENERATION": 5.0,
     "ENERGY_BASE_LOAD": 0.5,

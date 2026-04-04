@@ -1,8 +1,36 @@
-/*
- * main.js
- */
+import { state, updateState } from "./state.js";
+import { loadDashboardData } from "./dataLoader.js";
+import { renderDuckCurve } from "./charts/duckCurve.js";
+import { renderProductionChart } from "./charts/productionChart.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+const d3 = window.d3;
+
+let dashboardData = null;
+
+const KPI_SELECTORS = {
+    "total-solar": '[data-kpi="total-solar"]',
+    "total-load": '[data-kpi="total-load"]',
+    "grid-import": '[data-kpi="grid-import"]',
+    "grid-export": '[data-kpi="grid-export"]',
+    "self-consumption": '[data-kpi="self-consumption"]',
+    "net-savings": '[data-kpi="net-savings"]'
+};
+
+document.addEventListener("DOMContentLoaded", async () => {
+    setupControls();
+    await loadAndRender();
+
+    document.addEventListener("stateChange", () => {
+        if (!dashboardData) {
+            return;
+        }
+
+        console.log("Rendering charts with state:", { ...state });
+        renderAllCharts(dashboardData.households);
+    });
+});
+
+function setupControls() {
     const controls = {
         timeRange: document.getElementById("timeRange"),
         houseType: document.getElementById("houseType"),
@@ -10,58 +38,45 @@ document.addEventListener("DOMContentLoaded", () => {
         metricView: document.getElementById("metricView")
     };
 
-    Object.entries(controls).forEach(([name, control]) => {
-        if (!control) return;
+    Object.entries(controls).forEach(([key, control]) => {
+        if (!control) {
+            return;
+        }
+
         control.addEventListener("change", () => {
-            console.log(`${name} changed to`, control.value);
+            updateState(key, control.value);
         });
     });
 
-    loadAggregatedSummary();
-});
+    console.log("Initial state:", { ...state });
+}
 
-async function loadAggregatedSummary() {
-    const sources = [
-        "/data/summary/aggregated_data.json"
-    ];
+async function loadAndRender() {
+    dashboardData = await loadDashboardData();
+    renderKpis(dashboardData.summary, dashboardData.generalInfo, dashboardData.loadedFrom);
+    renderAllCharts(dashboardData.households);
+}
 
-    let summary = null;
-    let loadedFrom = null;
-
-    for (const source of sources) {
-        try {
-            const response = await fetch(source, { cache: "no-store" });
-            if (!response.ok) continue;
-            summary = await response.json();
-            loadedFrom = source;
-            break;
-        } catch (error) {
-            // Try the next candidate path.
-        }
-    }
-
-    if (!summary) {
-        console.warn("Could not load aggregated data from any known path.");
-        renderKpis(null, null);
+function renderAllCharts(rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+        renderEmptyState();
         return;
     }
 
-    renderKpis(summary, loadedFrom);
+    renderProductionChart(rows, state);
+    renderDuckCurve(rows, state);
 }
 
-function renderKpis(summary, loadedFrom) {
-    const kpiCards = {
-        "total-solar": document.querySelector('[data-kpi="total-solar"]'),
-        "total-load": document.querySelector('[data-kpi="total-load"]'),
-        "grid-import": document.querySelector('[data-kpi="grid-import"]'),
-        "grid-export": document.querySelector('[data-kpi="grid-export"]'),
-        "self-consumption": document.querySelector('[data-kpi="self-consumption"]'),
-        "net-savings": document.querySelector('[data-kpi="net-savings"]')
-    };
+function renderKpis(summary, generalInfo, loadedFrom) {
+    const kpiCards = Object.fromEntries(
+        Object.entries(KPI_SELECTORS).map(([key, selector]) => [key, document.querySelector(selector)])
+    );
 
     const setValue = (key, value) => {
-        const el = kpiCards[key];
-        if (el) el.textContent = value;
+        const element = kpiCards[key];
+        if (element) {
+            element.textContent = value;
+        }
     };
 
     if (!summary) {
@@ -86,14 +101,24 @@ function renderKpis(summary, loadedFrom) {
     setValue("total-load", formatKwh(totalLoad));
     setValue("grid-import", formatKwh(gridImport));
     setValue("grid-export", formatKwh(gridExport));
-    setValue("self-consumption", `${formatPercent(selfConsumption)}`);
+    setValue("self-consumption", formatPercent(selfConsumption));
     setValue("net-savings", formatCurrency(netProfit));
 
-    if (loadedFrom) {
-        const footer = document.querySelector(".footer-inner span:last-child");
-        if (footer) {
-            footer.textContent = `Data loaded from ${loadedFrom}`;
-        }
+    const footer = document.querySelector(".footer-inner span:last-child");
+    if (footer) {
+        const totalHouses = generalInfo?.total_houses ?? summary?.total_households ?? "unknown";
+        footer.textContent = `Data loaded from ${loadedFrom.summary || "summary"} | Houses: ${totalHouses}`;
+    }
+}
+
+function renderEmptyState() {
+    const main = document.getElementById("chart-area-main");
+    const duck = document.getElementById("chart-area-duck");
+    if (main) {
+        main.innerHTML = "<p>No data available.</p>";
+    }
+    if (duck) {
+        duck.innerHTML = "<p>No data available.</p>";
     }
 }
 

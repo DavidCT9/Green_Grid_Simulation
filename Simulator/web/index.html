@@ -6,7 +6,6 @@
     <meta name="description" content="Green Grid Simulation Dashboard">
     <title>Green Grid Dashboard</title>
 
-    <!-- Custom styling -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -93,39 +92,39 @@
                 <div class="filter-card">
                     <label for="timeRange">Time range</label>
                     <select id="timeRange" class="form-select">
-                        <option>Day</option>
-                        <option>Week</option>
-                        <option selected>Month</option>
-                        <option>Quarter</option>
-                        <option>Year</option>
+                        <option value="day">Day</option>
+                        <option value="week">Week</option>
+                        <option value="month" selected>Month</option>
+                        <option value="quarter">Quarter</option>
+                        <option value="year">Year</option>
                     </select>
                 </div>
                 <div class="filter-card">
                     <label for="houseType">Household type</label>
                     <select id="houseType" class="form-select">
-                        <option selected>All types</option>
-                        <option>Studio</option>
-                        <option>Small family</option>
-                        <option>Large family</option>
+                        <option value="all" selected>All types</option>
+                        <option value="studio">Studio</option>
+                        <option value="small_family">Small family</option>
+                        <option value="large_family">Large family</option>
                     </select>
                 </div>
                 <div class="filter-card">
                     <label for="wealthLevel">Wealth level</label>
                     <select id="wealthLevel" class="form-select">
-                        <option selected>All levels</option>
-                        <option>Low</option>
-                        <option>Middle</option>
-                        <option>High</option>
-                        <option>Luxury</option>
+                        <option value="all" selected>All levels</option>
+                        <option value="low">Low</option>
+                        <option value="middle">Middle</option>
+                        <option value="high">High</option>
+                        <option value="luxury">Luxury</option>
                     </select>
                 </div>
                 <div class="filter-card">
                     <label for="metricView">Metric</label>
                     <select id="metricView" class="form-select">
-                        <option selected>Absolute energy</option>
-                        <option>Per household</option>
-                        <option>Percentage</option>
-                        <option>Cumulative</option>
+                        <option value="absolute" selected>Absolute energy</option>
+                        <option value="per_household">Per household</option>
+                        <option value="percentage">Percentage</option>
+                        <option value="cumulative">Cumulative</option>
                     </select>
                 </div>
             </div>
@@ -155,14 +154,12 @@
                 </article>
                 <article class="chart-card">
                     <header class="chart-card-header">
-                        <h3>Summary insights</h3>
-                        <span>What this section will answer</span>
+                        <h3>Duck curve</h3>
+                        <span>Net demand after solar generation</span>
                     </header>
-                    <ul class="insight-list">
-                        <li>When solar peaks and load rises</li>
-                        <li>How much import is avoided</li>
-                        <li>When export surpluses appear</li>
-                    </ul>
+                    <div class="chart-placeholder" id="chart-area-duck">
+                        <p>Future D3 chart area</p>
+                    </div>
                 </article>
             </div>
         </section>
@@ -266,7 +263,7 @@
         </div>
     </footer>
 
-    <!-- Custom JS -->
-    <script src="js/main.js"></script>
+    <script src="js/d3.min.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

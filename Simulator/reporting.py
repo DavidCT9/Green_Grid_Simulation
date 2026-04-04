@@ -15,8 +15,8 @@ FINANCIAL_CHART_PATH = BASE_DIR.joinpath("report_financial.png")
 
 def generate_aggregated_report():
     """Generate report from all households"""
-    summary_dir = BASE_DIR.joinpath("summary")
-    logs_dir = BASE_DIR.joinpath("logs")
+    summary_dir = BASE_DIR.joinpath("web/data/summary")
+    logs_dir = BASE_DIR.joinpath("web/data/logs")
     
     if not logs_dir.exists():
         print("No logs directory found. Please run simulation first.")

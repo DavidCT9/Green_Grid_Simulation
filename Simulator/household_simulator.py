@@ -13,7 +13,7 @@ class HouseholdSimulator:
         self.base_dir = base_dir
         
         # Create log directory for this house
-        self.log_dir = base_dir.joinpath("logs", f"house_{household_id}")
+        self.log_dir = base_dir.joinpath("web/data/logs", f"house_{household_id}")
         self.log_dir.mkdir(parents=True, exist_ok=True)
         
         # Initialize components

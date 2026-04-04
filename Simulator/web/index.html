@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Green Grid Simulation Dashboard">
+    <title>Green Grid Dashboard</title>
+
+    <!-- Custom styling -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-green-grid">
+        <div class="container-fluid dashboard-shell">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <span class="brand-mark">G</span>
+                <span>
+                    <strong>Green Grid</strong>
+                    <small>Simulation Dashboard</small>
+                </span>
+            </a>
+            <div class="navbar-text ms-auto text-white-50 d-none d-md-block">
+                Solar • Battery • Grid • Household behavior
+            </div>
+        </div>
+    </nav>
+
+    <main class="dashboard-shell">
+        <section class="hero-panel">
+            <div>
+                <p class="eyebrow">Neighborhood energy intelligence</p>
+                <h1>Solar performance, consumption, and grid balance in one view</h1>
+                <p class="hero-copy">
+                    Explore how the simulated neighborhood produces, stores, imports, and exports energy across
+                    household types and wealth levels.
+                </p>
+            </div>
+            <div class="hero-meta">
+                <div class="meta-card">
+                    <span class="meta-label">Simulation scope</span>
+                    <strong>Neighborhood-wide</strong>
+                </div>
+                <div class="meta-card">
+                    <span class="meta-label">Time scale</span>
+                    <strong>Day • Week • Month • Quarter • Year</strong>
+                </div>
+                <div class="meta-card">
+                    <span class="meta-label">Primary story</span>
+                    <strong>Self-consumption and grid impact</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="Key metrics">
+            <article class="kpi-card">
+                <span class="kpi-label">Total solar</span>
+                <strong data-kpi="total-solar">—</strong>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Total load</span>
+                <strong data-kpi="total-load">—</strong>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Grid import</span>
+                <strong data-kpi="grid-import">—</strong>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Grid export</span>
+                <strong data-kpi="grid-export">—</strong>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Self-consumption</span>
+                <strong data-kpi="self-consumption">—</strong>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Net savings</span>
+                <strong data-kpi="net-savings">—</strong>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Filters and grouping</p>
+                    <h2>Refine the story</h2>
+                </div>
+                <p class="panel-note">
+                    All visualizations will respond to the same selection state.
+                </p>
+            </div>
+
+            <div class="filter-grid">
+                <div class="filter-card">
+                    <label for="timeRange">Time range</label>
+                    <select id="timeRange" class="form-select">
+                        <option>Day</option>
+                        <option>Week</option>
+                        <option selected>Month</option>
+                        <option>Quarter</option>
+                        <option>Year</option>
+                    </select>
+                </div>
+                <div class="filter-card">
+                    <label for="houseType">Household type</label>
+                    <select id="houseType" class="form-select">
+                        <option selected>All types</option>
+                        <option>Studio</option>
+                        <option>Small family</option>
+                        <option>Large family</option>
+                    </select>
+                </div>
+                <div class="filter-card">
+                    <label for="wealthLevel">Wealth level</label>
+                    <select id="wealthLevel" class="form-select">
+                        <option selected>All levels</option>
+                        <option>Low</option>
+                        <option>Middle</option>
+                        <option>High</option>
+                        <option>Luxury</option>
+                    </select>
+                </div>
+                <div class="filter-card">
+                    <label for="metricView">Metric</label>
+                    <select id="metricView" class="form-select">
+                        <option selected>Absolute energy</option>
+                        <option>Per household</option>
+                        <option>Percentage</option>
+                        <option>Cumulative</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Neighborhood overview</p>
+                    <h2>Energy balance and duck curve</h2>
+                </div>
+                <div class="button-group" aria-label="Overview chart controls">
+                    <button class="chip active" type="button">Solar vs load</button>
+                    <button class="chip" type="button">Duck curve</button>
+                    <button class="chip" type="button">Grid flow</button>
+                </div>
+            </div>
+            <div class="chart-grid chart-grid-large">
+                <article class="chart-card chart-card-wide">
+                    <header class="chart-card-header">
+                        <h3>Production vs consumption</h3>
+                        <span>Primary neighborhood trend</span>
+                    </header>
+                    <div class="chart-placeholder" id="chart-area-main">
+                        <p>Future D3 chart area</p>
+                    </div>
+                </article>
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>Summary insights</h3>
+                        <span>What this section will answer</span>
+                    </header>
+                    <ul class="insight-list">
+                        <li>When solar peaks and load rises</li>
+                        <li>How much import is avoided</li>
+                        <li>When export surpluses appear</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Household segmentation</p>
+                    <h2>Who benefits the most?</h2>
+                </div>
+                <p class="panel-note">Compare household types and wealth levels side by side.</p>
+            </div>
+            <div class="chart-grid">
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>By household type</h3>
+                        <span>Studio vs family profiles</span>
+                    </header>
+                    <div class="chart-placeholder">Placeholder</div>
+                </article>
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>By wealth level</h3>
+                        <span>Consumption and savings distribution</span>
+                    </header>
+                    <div class="chart-placeholder">Placeholder</div>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Storage and resilience</p>
+                    <h2>Battery behavior and inverter impact</h2>
+                </div>
+                <p class="panel-note">Show how storage smooths mismatch and how failures affect service.</p>
+            </div>
+            <div class="chart-grid">
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>Battery state of charge</h3>
+                        <span>Capacity usage over time</span>
+                    </header>
+                    <div class="chart-placeholder">Placeholder</div>
+                </article>
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>Battery utilization</h3>
+                        <span>SOC distribution / frequency</span>
+                    </header>
+                    <div class="chart-placeholder">Placeholder</div>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Economic impact</p>
+                    <h2>Costs, revenues, and savings</h2>
+                </div>
+                <p class="panel-note">This section supports the pitch: savings, exports, and value creation.</p>
+            </div>
+            <div class="chart-grid">
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>Cost savings over time</h3>
+                        <span>Cumulative financial benefit</span>
+                    </header>
+                    <div class="chart-placeholder">Placeholder</div>
+                </article>
+                <article class="chart-card">
+                    <header class="chart-card-header">
+                        <h3>Surplus vs deficit</h3>
+                        <span>Where energy goes when supply is not enough</span>
+                    </header>
+                    <div class="chart-placeholder">Placeholder</div>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <p class="section-kicker">Data explorer</p>
+                    <h2>Household-level detail</h2>
+                </div>
+                <p class="panel-note">Later this area can show ranked households, tables, or drill-down details.</p>
+            </div>
+            <div class="table-placeholder">
+                <p>No table yet — this space is reserved for drill-down views and rankings.</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="dashboard-shell footer-inner">
+            <span>Green Grid Simulation Dashboard</span>
+            <span>Built for D3-based analysis and filtering</span>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="js/main.js"></script>
+</body>
+</html>

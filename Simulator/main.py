@@ -93,7 +93,7 @@ def generate_households(houses_config):
 
 def save_general_info(households, config, houses_config):
     """Save general information about the simulation run"""
-    summary_dir = BASE_DIR.joinpath("summary")
+    summary_dir = BASE_DIR.joinpath("web/data/summary")
     summary_dir.mkdir(parents=True, exist_ok=True)
     
     # Count households by type and wealth

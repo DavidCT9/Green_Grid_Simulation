@@ -16,15 +16,20 @@ function rangeToMaxSteps(range) {
         year: 24 * 365
     };
 
-      return stepsByRange[range] || stepsByRange.month;
+    return stepsByRange[range] || stepsByRange.month;
 }
 
-function aggregateDuckCurve(rows, state) {
+function aggregateGridFlow(rows, state) {
     const selectedType = normalizeSelection(state.houseType);
     const selectedWealth = normalizeSelection(state.wealthLevel);
     const maxSteps = rangeToMaxSteps(state.timeRange);
 
     const filtered = rows.filter((row) => {
+        const timestamp = Number(row.timestamp);
+        if (!Number.isFinite(timestamp) || timestamp < 0 || timestamp >= maxSteps) {
+            return false;
+        }
+
         const matchesType = !selectedType || row.household_type === selectedType;
         const matchesWealth = !selectedWealth || row.wealth_level === selectedWealth;
         return matchesType && matchesWealth;
@@ -34,64 +39,58 @@ function aggregateDuckCurve(rows, state) {
 
     filtered.forEach((row) => {
         const timestamp = Number(row.timestamp);
-        if (!Number.isFinite(timestamp) || timestamp < 0 || timestamp >= maxSteps) {
+        if (!Number.isFinite(timestamp)) {
             return;
         }
 
         if (!byTimestamp.has(timestamp)) {
-            byTimestamp.set(timestamp, { timestamp, solar: 0, load: 0 });
+            byTimestamp.set(timestamp, {
+                timestamp,
+                importFlow: 0,
+                exportFlow: 0
+            });
         }
 
         const bucket = byTimestamp.get(timestamp);
-        bucket.solar += Number(row.solar_generation) || 0;
-        bucket.load += Number(row.load_demand) || 0;
+        bucket.importFlow += Number(row.grid_import) || 0;
+        bucket.exportFlow += Number(row.grid_export) || 0;
     });
 
-    return Array.from(byTimestamp.values())
-        .sort((a, b) => a.timestamp - b.timestamp)
-        .map((d) => ({
-            ...d,
-            netLoad: d.load - d.solar
-        }));
+    return Array.from(byTimestamp.values()).sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function renderEmptyChart(container, message) {
-    container.selectAll("*").remove();
+    container.html("");
     container.append("div")
         .attr("class", "empty-chart-message")
         .text(message);
 }
 
-export function renderDuckCurve(rows, state) {
-    const container = d3.select("#chart-area-duck");
+export function renderGridFlow(rows, state) {
+    const container = d3.select("#chart-area-gridflow");
+
+    console.log("que rollo que pex")
+    console.log(container);
     if (container.empty()) {
         return;
     }
+    console.log("que rollo que pex")
 
-    const d3Local = d3;
-    if (!d3Local) {
-        console.warn("D3 is not available for duck curve.");
-        return;
-    }
-
-    const grouped = aggregateDuckCurve(rows, state);
+    const grouped = aggregateGridFlow(rows, state);
 
     if (!grouped.length) {
         renderEmptyChart(container, "No data available for the selected filters.");
         return;
     }
 
-    container.selectAll("*").remove();
+    container.html("");
 
     const containerNode = container.node();
-    const canvasWidth = containerNode.clientWidth;
+    const canvasWidth = Math.max(600, containerNode?.clientWidth || 900);
     const canvasHeight = 400;
-    const margin = { top: 25, right: 15, bottom: 55, left: 60 };
+    const margin = { top: 25, right: 20, bottom: 55, left: 65 };
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
-
-
-    console.log("D " + canvasWidth + " " + width);
 
     const svg = container.append("svg")
         .attr("width", canvasWidth)
@@ -102,28 +101,28 @@ export function renderDuckCurve(rows, state) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const x = d3Local.scaleLinear()
-        .domain(d3Local.extent(grouped, (d) => d.timestamp))
-        .range([0, width]);
+    const x = d3.scaleLinear()
+        .domain(d3.extent(grouped, (d) => d.timestamp))
+        .range([0, width])
+        .nice();
 
-    const minNet = d3Local.min(grouped, (d) => d.netLoad) || 0;
-    const maxNet = d3Local.max(grouped, (d) => d.netLoad) || 0;
-    const y = d3Local.scaleLinear()
-        .domain([Math.min(0, minNet) * 1.1, Math.max(0, maxNet) * 1.1])
+    const maxFlow = d3.max(grouped, (d) => Math.max(d.importFlow, d.exportFlow)) || 1;
+    const y = d3.scaleLinear()
+        .domain([-maxFlow * 1.1, maxFlow * 1.1])
         .nice()
         .range([height, 0]);
 
     g.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3Local.axisBottom(x).ticks(6));
+        .call(d3.axisBottom(x).ticks(8).tickFormat(d3.format("d")));
 
     g.append("g")
-        .call(d3Local.axisLeft(y).ticks(6));
+        .call(d3.axisLeft(y).ticks(6));
 
     g.append("g")
         .attr("class", "grid-lines")
         .call(
-            d3Local.axisLeft(y)
+            d3.axisLeft(y)
                 .ticks(6)
                 .tickSize(-width)
                 .tickFormat("")
@@ -132,55 +131,40 @@ export function renderDuckCurve(rows, state) {
         .attr("stroke", "#e5e7eb")
         .attr("stroke-dasharray", "4,4");
 
-    const netArea = d3Local.area()
-        .x((d) => x(d.timestamp))
-        .y0(y(0))
-        .y1((d) => y(d.netLoad));
+    g.append("line")
+        .attr("x1", 0)
+        .attr("x2", width)
+        .attr("y1", y(0))
+        .attr("y2", y(0))
+        .attr("stroke", "#64748b")
+        .attr("stroke-width", 1.5);
 
-    const netLine = d3Local.line()
+    const importLine = d3.line()
         .x((d) => x(d.timestamp))
-        .y((d) => y(d.netLoad));
+        .y((d) => y(d.importFlow));
 
-    const solarLine = d3Local.line()
+    const exportLine = d3.line()
         .x((d) => x(d.timestamp))
-        .y((d) => y(d.solar));
-
-    const loadLine = d3Local.line()
-        .x((d) => x(d.timestamp))
-        .y((d) => y(d.load));
-
-    g.append("path")
-        .datum(grouped)
-        .attr("fill", "rgba(59, 130, 246, 0.18)")
-        .attr("d", netArea);
+        .y((d) => y(-d.exportFlow));
 
     g.append("path")
         .datum(grouped)
         .attr("fill", "none")
-        .attr("stroke", "#1d4ed8")
-        .attr("stroke-width", 2.5)
-        .attr("d", netLine);
+        .attr("stroke", "#ef4444")
+        .attr("stroke-width", 3)
+        .attr("d", importLine);
 
     g.append("path")
         .datum(grouped)
         .attr("fill", "none")
-        .attr("stroke", "#16a34a")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,4")
-        .attr("d", solarLine);
-
-    g.append("path")
-        .datum(grouped)
-        .attr("fill", "none")
-        .attr("stroke", "#dc2626")
-        .attr("stroke-width", 2)
-        .attr("stroke-dasharray", "5,4")
-        .attr("d", loadLine);
+        .attr("stroke", "#22c55e")
+        .attr("stroke-width", 3)
+        .attr("d", exportLine);
 
     const legend = [
-        { label: "Net load", color: "#1d4ed8" },
-        { label: "Solar", color: "#16a34a" },
-        { label: "Load", color: "#dc2626" }
+        { label: "Import from grid", color: "#ef4444" },
+        { label: "Export to grid", color: "#22c55e" },
+        { label: "Zero line", color: "#64748b" }
     ];
 
     const legendGroup = g.append("g")
@@ -188,7 +172,7 @@ export function renderDuckCurve(rows, state) {
 
     legend.forEach((item, index) => {
         const row = legendGroup.append("g")
-            .attr("transform", `translate(${index * 105}, -20)`);
+            .attr("transform", `translate(${index * 145}, 0)`);
 
         row.append("line")
             .attr("x1", 0)
@@ -205,4 +189,12 @@ export function renderDuckCurve(rows, state) {
             .attr("fill", "#334155")
             .text(item.label);
     });
+
+    g.append("text")
+        .attr("x", width / 2)
+        .attr("y", height + 42)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 12)
+        .attr("fill", "#64748b")
+        .text("Time step");
 }

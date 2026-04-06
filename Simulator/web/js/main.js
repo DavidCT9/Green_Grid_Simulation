@@ -2,6 +2,7 @@ import { state, updateState } from "./state.js";
 import { loadDashboardData } from "./dataLoader.js";
 import { renderDuckCurve } from "./charts/duckCurve.js";
 import { renderProductionChart } from "./charts/productionChart.js";
+import { renderGridFlow } from "./charts/gridFlow.js";
 
 const d3 = window.d3;
 
@@ -65,6 +66,8 @@ function renderAllCharts(rows) {
 
     renderProductionChart(rows, state);
     renderDuckCurve(rows, state);
+    renderGridFlow(rows, state);
+
 }
 
 function renderKpis(summary, generalInfo, loadedFrom) {

@@ -2,7 +2,6 @@ const d3 = window.d3;
 
 function normalizeSelection(value) {
     
-    console.log("Que rollo " +  value);
     if (!value || value.toLowerCase() === "all") {
         return null;
     }
@@ -90,11 +89,14 @@ export function renderProductionChart(rows, state) {
 
     container.selectAll("*").remove();
 
-    const canvasWidth = 960;
-    const canvasHeight = 420;
+    const containerNode = container.node();
+    const canvasWidth = containerNode.clientWidth;
+    const canvasHeight = 400;
     const margin = { top: 25, right: 20, bottom: 55, left: 65 };
     const width = canvasWidth - margin.left - margin.right;
     const height = canvasHeight - margin.top - margin.bottom;
+
+    console.log("P " + canvasWidth + " " + width);
 
     const svg = container.append("svg")
         .attr("width", canvasWidth)

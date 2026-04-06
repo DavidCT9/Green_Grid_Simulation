@@ -348,3 +348,14 @@ main.dashboard-shell {
         text-align: left;
     }
 }
+
+#chart-area-gridflow {
+    width: 100%;
+    min-height: 360px;
+}
+
+#chart-area-gridflow svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}

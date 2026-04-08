@@ -118,15 +118,6 @@
                         <option value="luxury">Luxury</option>
                     </select>
                 </div>
-                <div class="filter-card">
-                    <label for="metricView">Metric</label>
-                    <select id="metricView" class="form-select">
-                        <option value="absolute" selected>Absolute energy</option>
-                        <option value="per_household">Per household</option>
-                        <option value="percentage">Percentage</option>
-                        <option value="cumulative">Cumulative</option>
-                    </select>
-                </div>
             </div>
         </section>
 
@@ -138,37 +129,40 @@
                 </div>
                 <div class="button-group" aria-label="Overview chart controls">
                     <button class="chip active" type="button">Solar vs load</button>
-                    <button class="chip" type="button">Duck curve</button>
-                    <button class="chip" type="button">Grid flow</button>
+                    <button class="chip active" type="button">Duck curve</button>
+                    <button class="chip active" type="button">Grid flow</button>
                 </div>
             </div>
-          <div class="chart-grid chart-grid-large">
-              <article class="chart-card chart-card-wide">
-                  <header class="chart-card-header">
-                      <h3>Production vs consumption</h3>
-                      <span>Primary neighborhood trend</span>
-                  </header>
-                  <div class="chart-placeholder" id="chart-area-main"></div>
-              </article>
-          </div>
-          <div class="chart-grid chart-grid-large">
-              <article class="chart-card chart-card-wide">
-                  <header class="chart-card-header">
-                      <h3>Duck curve</h3>
-                      <span>Net demand after solar generation</span>
-                  </header>
-                  <div class="chart-placeholder" id="chart-area-duck"></div>
-              </article>
-          </div>
-          <div class="chart-grid chart-grid-large">
-              <article class="chart-card chart-card-wide">
-                  <header class="chart-card-header">
-                      <h3>Grid Flow</h3>
-                      <span>Import above zero, export below zero</span>
-                  </header>
-                  <div class="chart-placeholder" id="chart-area-gridflow"></div>
-              </article>
-          </div>
+
+              <div class="chart-grid chart-grid-large">
+                <article class="chart-card chart-card-wide">
+                    <header class="chart-card-header">
+                        <h3>Production vs consumption</h3>
+                        <span>Primary neighborhood trend</span>
+                    </header>
+                    <div class="chart-placeholder" id="chart-area-main"></div>
+                </article>
+            </div>
+
+            <div class="chart-grid chart-grid-large">
+                <article class="chart-card chart-card-wide">
+                    <header class="chart-card-header">
+                        <h3>Duck curve</h3>
+                        <span>Net demand after solar generation</span>
+                    </header>
+                    <div class="chart-placeholder" id="chart-area-duck"></div>
+                </article>
+            </div>
+
+            <div class="chart-grid chart-grid-large">
+                <article class="chart-card chart-card-wide">
+                    <header class="chart-card-header">
+                        <h3>Grid flow</h3>
+                        <span>Import above zero, export below zero</span>
+                    </header>
+                    <div class="chart-placeholder" id="chart-area-gridflow"></div>
+                </article>
+            </div>
         </section>
 
         <section class="panel">
@@ -183,16 +177,16 @@
                 <article class="chart-card">
                     <header class="chart-card-header">
                         <h3>By household type</h3>
-                        <span>Studio vs family profiles</span>
+                        <span>Average load, import, and export per home</span>
                     </header>
-                    <div class="chart-placeholder">Placeholder</div>
+                    <div class="chart-placeholder" id="chart-area-household-type"></div>
                 </article>
                 <article class="chart-card">
                     <header class="chart-card-header">
                         <h3>By wealth level</h3>
-                        <span>Consumption and savings distribution</span>
+                        <span>Average net savings per household</span>
                     </header>
-                    <div class="chart-placeholder">Placeholder</div>
+                    <div class="chart-placeholder" id="chart-area-wealth-comparison"></div>
                 </article>
             </div>
         </section>
@@ -209,16 +203,16 @@
                 <article class="chart-card">
                     <header class="chart-card-header">
                         <h3>Battery state of charge</h3>
-                        <span>Capacity usage over time</span>
+                        <span>Average SOC over time</span>
                     </header>
-                    <div class="chart-placeholder">Placeholder</div>
+                    <div class="chart-placeholder" id="chart-area-battery-soc"></div>
                 </article>
                 <article class="chart-card">
                     <header class="chart-card-header">
                         <h3>Battery utilization</h3>
                         <span>SOC distribution / frequency</span>
                     </header>
-                    <div class="chart-placeholder">Placeholder</div>
+                    <div class="chart-placeholder" id="chart-area-battery-utilization"></div>
                 </article>
             </div>
         </section>
@@ -237,28 +231,15 @@
                         <h3>Cost savings over time</h3>
                         <span>Cumulative financial benefit</span>
                     </header>
-                    <div class="chart-placeholder">Placeholder</div>
+                    <div class="chart-placeholder" id="chart-area-cost-savings"></div>
                 </article>
                 <article class="chart-card">
                     <header class="chart-card-header">
                         <h3>Surplus vs deficit</h3>
-                        <span>Where energy goes when supply is not enough</span>
+                        <span>Energy balance breakdown</span>
                     </header>
-                    <div class="chart-placeholder">Placeholder</div>
+                    <div class="chart-placeholder" id="chart-area-surplus-deficit"></div>
                 </article>
-            </div>
-        </section>
-
-        <section class="panel">
-            <div class="panel-header">
-                <div>
-                    <p class="section-kicker">Data explorer</p>
-                    <h2>Household-level detail</h2>
-                </div>
-                <p class="panel-note">Later this area can show ranked households, tables, or drill-down details.</p>
-            </div>
-            <div class="table-placeholder">
-                <p>No table yet — this space is reserved for drill-down views and rankings.</p>
             </div>
         </section>
     </main>

@@ -1,15 +1,20 @@
-  // state.js
-
 export const state = {
     timeRange: "month",
     houseType: "all",
-    wealthLevel: "all",
-    metricView: "absolute"
+    wealthLevel: "all"
 };
 
 export function updateState(key, value) {
-    state[key] = value;
-    console.log("STATE UPDATED:", state);
+    if (!(key in state)) {
+        return;
+    }
 
-    document.dispatchEvent(new CustomEvent("stateChange", { detail: state }));
+    state[key] = value;
+    console.log("STATE UPDATED:", { ...state });
+
+    document.dispatchEvent(
+        new CustomEvent("stateChange", {
+            detail: { ...state }
+        })
+    );
 }

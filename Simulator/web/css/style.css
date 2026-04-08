@@ -192,7 +192,7 @@ main.dashboard-shell {
 
 .filter-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
 }
 
@@ -349,12 +349,12 @@ main.dashboard-shell {
     }
 }
 
-#chart-area-gridflow {
+[id^="chart-area-"] {
     width: 100%;
-    min-height: 360px;
+    min-height: 320px;
 }
 
-#chart-area-gridflow svg {
+[id^="chart-area-"] svg {
     display: block;
     width: 100%;
     height: auto;

@@ -3,8 +3,12 @@ import { loadDashboardData } from "./dataLoader.js";
 import { renderDuckCurve } from "./charts/duckCurve.js";
 import { renderProductionChart } from "./charts/productionChart.js";
 import { renderGridFlow } from "./charts/gridFlow.js";
-
-const d3 = window.d3;
+import { renderHouseholdTypeComparison } from "./charts/householdTypeComparison.js";
+import { renderWealthComparison } from "./charts/wealthComparison.js";
+import { renderBatterySoc } from "./charts/batterySoc.js";
+import { renderBatteryUtilization } from "./charts/batteryUtilization.js";
+import { renderCostSavings } from "./charts/costSavings.js";
+import { renderSurplusDeficit } from "./charts/surplusDeficit.js";
 
 let dashboardData = null;
 
@@ -35,8 +39,7 @@ function setupControls() {
     const controls = {
         timeRange: document.getElementById("timeRange"),
         houseType: document.getElementById("houseType"),
-        wealthLevel: document.getElementById("wealthLevel"),
-        metricView: document.getElementById("metricView")
+        wealthLevel: document.getElementById("wealthLevel")
     };
 
     Object.entries(controls).forEach(([key, control]) => {
@@ -68,6 +71,14 @@ function renderAllCharts(rows) {
     renderDuckCurve(rows, state);
     renderGridFlow(rows, state);
 
+    renderHouseholdTypeComparison(rows, state);
+    renderWealthComparison(rows, state);
+
+    renderBatterySoc(rows, state);
+    renderBatteryUtilization(rows, state);
+
+    renderCostSavings(rows, state);
+    renderSurplusDeficit(rows, state);
 }
 
 function renderKpis(summary, generalInfo, loadedFrom) {
@@ -94,7 +105,9 @@ function renderKpis(summary, generalInfo, loadedFrom) {
     const totalLoad = Number(energy.total_load_kwh || 0);
     const gridImport = Number(energy.total_grid_import_kwh || 0);
     const gridExport = Number(energy.total_grid_export_kwh || 0);
-    const netProfit = Number(financial.net_profit ?? (Number(financial.total_revenue || 0) - Number(financial.total_cost || 0)));
+    const netProfit = Number(
+        financial.net_profit ?? (Number(financial.total_revenue || 0) - Number(financial.total_cost || 0))
+    );
 
     const selfConsumption = totalSolar > 0
         ? ((totalSolar - gridExport) / totalSolar) * 100
@@ -115,14 +128,24 @@ function renderKpis(summary, generalInfo, loadedFrom) {
 }
 
 function renderEmptyState() {
-    const main = document.getElementById("chart-area-main");
-    const duck = document.getElementById("chart-area-duck");
-    if (main) {
-        main.innerHTML = "<p>No data available.</p>";
-    }
-    if (duck) {
-        duck.innerHTML = "<p>No data available.</p>";
-    }
+    const ids = [
+        "chart-area-main",
+        "chart-area-duck",
+        "chart-area-gridflow",
+        "chart-area-household-type",
+        "chart-area-wealth-comparison",
+        "chart-area-battery-soc",
+        "chart-area-battery-utilization",
+        "chart-area-cost-savings",
+        "chart-area-surplus-deficit"
+    ];
+
+    ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.innerHTML = "<p>No data available.</p>";
+        }
+    });
 }
 
 function formatKwh(value) {

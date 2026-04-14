@@ -8,10 +8,10 @@
     "large_family": 30
   },
   "households_by_wealth": {
-    "middle": 56,
-    "high": 14,
-    "low": 25,
-    "luxury": 5
+    "low": 19,
+    "middle": 44,
+    "high": 30,
+    "luxury": 7
   },
   "wealth_distribution_config": {
     "low": 0.2,

@@ -1,0 +1,728 @@
+{
+  "generated_at": "2026-05-16T19:50:24.119907+00:00",
+  "strategy": {
+    "replacement": "Invalid numeric cells are replaced with the mean from the same month and time of day. If that group has no valid values, the cleaner falls back to the same time-of-day mean, then the global column mean. Discrete weather code columns use the mode instead of the mean.",
+    "reason": "Solar generation and weather indicators are strongly time-dependent. Month plus time-of-day grouping preserves daily and seasonal behavior better than a general mean or a small adjacent-row window.",
+    "timestamp_normalization": "PV LocalTime values are normalized to YYYY-MM-DD HH:MM.",
+    "weather_metadata": "Weather metadata rows and fully empty trailing columns are removed from cleaned CSV output.",
+    "weather_time_correlation": "The weather time-correlated output shifts cleaned weather timestamps by -8 hours."
+  },
+  "files": {
+    "139654_Actual_DPV_24MW_5m.csv": {
+      "source_path": "mlModel/dataset/139654_Actual_DPV_24MW_5m.csv",
+      "cleaned_path": "mlModel/dataset/139654_Actual_DPV_24MW_5m_cleaned.csv",
+      "row_count": 105120,
+      "column_count": 2,
+      "metadata_rows_removed": 0,
+      "empty_columns_removed": 0,
+      "timestamp_info": {
+        "malformed_timestamps": 0,
+        "duplicate_timestamps": 0,
+        "interval_gaps": 0,
+        "format_counts": {
+          "%m-%d-%y %H:%M": 41472,
+          "%m/%d/%y %H:%M": 63648
+        },
+        "normalized_timestamps": 105120
+      },
+      "issues": {
+        "mixed_timestamp_formats": 2
+      },
+      "replacements_by_column": {},
+      "columns": {
+        "LocalTime": {
+          "type": "datetime",
+          "missing_count": 0,
+          "unique_count": 105120,
+          "replacement_count": 0
+        },
+        "Power(MW)": {
+          "count": 105120,
+          "min": 0.0,
+          "max": 22.0,
+          "range": 22.0,
+          "mean": 3.781856925418569,
+          "median": 0.0,
+          "std_deviation": 5.612992305792638,
+          "q1": 0.0,
+          "q3": 6.9,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            24.0
+          ]
+        }
+      }
+    },
+    "139654_DA_DPV_24MW_60m.csv": {
+      "source_path": "mlModel/dataset/139654_DA_DPV_24MW_60m.csv",
+      "cleaned_path": "mlModel/dataset/139654_DA_DPV_24MW_60m_cleaned.csv",
+      "row_count": 8760,
+      "column_count": 2,
+      "metadata_rows_removed": 0,
+      "empty_columns_removed": 0,
+      "timestamp_info": {
+        "malformed_timestamps": 0,
+        "duplicate_timestamps": 0,
+        "interval_gaps": 0,
+        "format_counts": {
+          "%m-%d-%y %H:%M": 3456,
+          "%m/%d/%y %H:%M": 5304
+        },
+        "normalized_timestamps": 8760
+      },
+      "issues": {
+        "mixed_timestamp_formats": 2
+      },
+      "replacements_by_column": {},
+      "columns": {
+        "LocalTime": {
+          "type": "datetime",
+          "missing_count": 0,
+          "unique_count": 8760,
+          "replacement_count": 0
+        },
+        "Power(MW)": {
+          "count": 8760,
+          "min": 0.0,
+          "max": 20.4,
+          "range": 20.4,
+          "mean": 4.414041095890411,
+          "median": 0.0,
+          "std_deviation": 6.3730858254812786,
+          "q1": 0.0,
+          "q3": 8.525,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            24.0
+          ]
+        }
+      }
+    },
+    "139654_HA4_DPV_24MW_60m.csv": {
+      "source_path": "mlModel/dataset/139654_HA4_DPV_24MW_60m.csv",
+      "cleaned_path": "mlModel/dataset/139654_HA4_DPV_24MW_60m_cleaned.csv",
+      "row_count": 8760,
+      "column_count": 2,
+      "metadata_rows_removed": 0,
+      "empty_columns_removed": 0,
+      "timestamp_info": {
+        "malformed_timestamps": 0,
+        "duplicate_timestamps": 0,
+        "interval_gaps": 0,
+        "format_counts": {
+          "%m-%d-%y %H:%M": 3456,
+          "%m/%d/%y %H:%M": 5304
+        },
+        "normalized_timestamps": 8760
+      },
+      "issues": {
+        "mixed_timestamp_formats": 2
+      },
+      "replacements_by_column": {},
+      "columns": {
+        "LocalTime": {
+          "type": "datetime",
+          "missing_count": 0,
+          "unique_count": 8760,
+          "replacement_count": 0
+        },
+        "Power(MW)": {
+          "count": 8760,
+          "min": 0.0,
+          "max": 19.1,
+          "range": 19.1,
+          "mean": 3.7358561643835615,
+          "median": 0.0,
+          "std_deviation": 5.405197350643419,
+          "q1": 0.0,
+          "q3": 7.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            24.0
+          ]
+        }
+      }
+    },
+    "139654_Weather_30m.csv": {
+      "source_path": "mlModel/dataset/139654_Weather_30m.csv",
+      "cleaned_path": "mlModel/dataset/139654_Weather_30m_cleaned.csv",
+      "row_count": 17520,
+      "column_count": 30,
+      "metadata_rows_removed": 2,
+      "empty_columns_removed": 16,
+      "timestamp_info": {
+        "malformed_timestamps": 0,
+        "duplicate_timestamps": 0,
+        "interval_gaps": 0,
+        "format_counts": {},
+        "normalized_timestamps": 0
+      },
+      "issues": {
+        "empty_columns_removed": 16
+      },
+      "replacements_by_column": {},
+      "columns": {
+        "Year": {
+          "count": 17520,
+          "min": 2006.0,
+          "max": 2006.0,
+          "range": 0.0,
+          "mean": 2006.0,
+          "median": 2006.0,
+          "std_deviation": 0.0,
+          "q1": 2006.0,
+          "q3": 2006.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            null,
+            null
+          ]
+        },
+        "Month": {
+          "count": 17520,
+          "min": 1.0,
+          "max": 12.0,
+          "range": 11.0,
+          "mean": 6.526027397260274,
+          "median": 7.0,
+          "std_deviation": 3.4478513220519553,
+          "q1": 4.0,
+          "q3": 10.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            1.0,
+            12.0
+          ]
+        },
+        "Day": {
+          "count": 17520,
+          "min": 1.0,
+          "max": 31.0,
+          "range": 30.0,
+          "mean": 15.72054794520548,
+          "median": 16.0,
+          "std_deviation": 8.79624700332998,
+          "q1": 8.0,
+          "q3": 23.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            1.0,
+            31.0
+          ]
+        },
+        "Hour": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 23.0,
+          "range": 23.0,
+          "mean": 11.5,
+          "median": 11.5,
+          "std_deviation": 6.922186552431729,
+          "q1": 5.75,
+          "q3": 17.25,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            23.0
+          ]
+        },
+        "Minute": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 30.0,
+          "range": 30.0,
+          "mean": 15.0,
+          "median": 15.0,
+          "std_deviation": 15.0,
+          "q1": 0.0,
+          "q3": 30.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            59.0
+          ]
+        },
+        "Temperature": {
+          "count": 17520,
+          "min": -0.7,
+          "max": 34.0,
+          "range": 34.7,
+          "mean": 13.243721461187215,
+          "median": 12.3,
+          "std_deviation": 5.424666042793859,
+          "q1": 9.7,
+          "q3": 16.1,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            -80.0,
+            70.0
+          ]
+        },
+        "Alpha": {
+          "count": 17520,
+          "min": 0.11,
+          "max": 1.85,
+          "range": 1.74,
+          "mean": 1.0061872146118722,
+          "median": 1.01,
+          "std_deviation": 0.2655402980381621,
+          "q1": 0.82,
+          "q3": 1.2,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Aerosol Optical Depth": {
+          "count": 17520,
+          "min": 0.018,
+          "max": 0.444,
+          "range": 0.426,
+          "mean": 0.08429885844748858,
+          "median": 0.076,
+          "std_deviation": 0.04426186808906045,
+          "q1": 0.053,
+          "q3": 0.106,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Asymmetry": {
+          "count": 17520,
+          "min": 0.63,
+          "max": 0.67,
+          "range": 0.040000000000000036,
+          "mean": 0.65,
+          "median": 0.65,
+          "std_deviation": 0.011586482440433163,
+          "q1": 0.64,
+          "q3": 0.66,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            1.0
+          ]
+        },
+        "Clearsky DHI": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 251.0,
+          "range": 251.0,
+          "mean": 40.62928082191781,
+          "median": 0.0,
+          "std_deviation": 46.883691692773695,
+          "q1": 0.0,
+          "q3": 82.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Clearsky DNI": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 996.0,
+          "range": 996.0,
+          "mean": 364.4711757990868,
+          "median": 0.0,
+          "std_deviation": 397.0963400470401,
+          "q1": 0.0,
+          "q3": 813.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Clearsky GHI": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 1039.0,
+          "range": 1039.0,
+          "mean": 247.8618721461187,
+          "median": 0.0,
+          "std_deviation": 322.80329193090114,
+          "q1": 0.0,
+          "q3": 495.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Cloud Fill Flag": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 7.0,
+          "range": 7.0,
+          "mean": 0.26860730593607307,
+          "median": 0.0,
+          "std_deviation": 1.253987567081154,
+          "q1": 0.0,
+          "q3": 0.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            7.0
+          ]
+        },
+        "Cloud Type": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 10.0,
+          "range": 10.0,
+          "mean": 2.2454337899543377,
+          "median": 1.0,
+          "std_deviation": 2.800304071706867,
+          "q1": 0.0,
+          "q3": 4.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            -15.0,
+            12.0
+          ]
+        },
+        "Dew Point": {
+          "count": 17520,
+          "min": -7.4,
+          "max": 16.9,
+          "range": 24.299999999999997,
+          "mean": 9.057271689497716,
+          "median": 10.0,
+          "std_deviation": 3.836302604132924,
+          "q1": 6.9,
+          "q3": 11.8,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            -80.0,
+            70.0
+          ]
+        },
+        "DHI": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 519.0,
+          "range": 519.0,
+          "mean": 58.84720319634703,
+          "median": 0.0,
+          "std_deviation": 89.56758244124751,
+          "q1": 0.0,
+          "q3": 92.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "DNI": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 996.0,
+          "range": 996.0,
+          "mean": 241.18829908675798,
+          "median": 0.0,
+          "std_deviation": 359.4511372634445,
+          "q1": 0.0,
+          "q3": 540.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Fill Flag": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 7.0,
+          "range": 7.0,
+          "mean": 0.26889269406392696,
+          "median": 0.0,
+          "std_deviation": 1.2544952622129186,
+          "q1": 0.0,
+          "q3": 0.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            7.0
+          ]
+        },
+        "GHI": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 1039.0,
+          "range": 1039.0,
+          "mean": 201.90085616438355,
+          "median": 0.0,
+          "std_deviation": 294.1279133010477,
+          "q1": 0.0,
+          "q3": 354.25,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Ozone": {
+          "count": 17520,
+          "min": 0.226,
+          "max": 0.478,
+          "range": 0.252,
+          "mean": 0.3079366438356165,
+          "median": 0.304,
+          "std_deviation": 0.033690616346871,
+          "q1": 0.289,
+          "q3": 0.324,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Relative Humidity": {
+          "count": 17520,
+          "min": 14.41,
+          "max": 100.0,
+          "range": 85.59,
+          "mean": 79.21853938356165,
+          "median": 84.81,
+          "std_deviation": 19.739831851205317,
+          "q1": 66.09,
+          "q3": 96.23,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            100.0
+          ]
+        },
+        "Solar Zenith Angle": {
+          "count": 17520,
+          "min": 14.63,
+          "max": 165.47,
+          "range": 150.84,
+          "mean": 89.6718247716895,
+          "median": 89.36500000000001,
+          "std_deviation": 37.19415828690508,
+          "q1": 60.38,
+          "q3": 119.23,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            180.0
+          ]
+        },
+        "SSA": {
+          "count": 17520,
+          "min": 0.83,
+          "max": 0.99,
+          "range": 0.16000000000000003,
+          "mean": 0.9243498858447489,
+          "median": 0.92,
+          "std_deviation": 0.023138943038057608,
+          "q1": 0.91,
+          "q3": 0.94,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            1.0
+          ]
+        },
+        "Surface Albedo": {
+          "count": 17520,
+          "min": 0.1,
+          "max": 0.13,
+          "range": 0.03,
+          "mean": 0.11646575342465754,
+          "median": 0.12,
+          "std_deviation": 0.007088640713992866,
+          "q1": 0.11,
+          "q3": 0.12,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            1.0
+          ]
+        },
+        "Pressure": {
+          "count": 17520,
+          "min": 983.0,
+          "max": 1017.0,
+          "range": 34.0,
+          "mean": 1000.9295091324201,
+          "median": 1000.0,
+          "std_deviation": 4.997453368467576,
+          "q1": 998.0,
+          "q3": 1004.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            800.0,
+            1100.0
+          ]
+        },
+        "Precipitable Water": {
+          "count": 17520,
+          "min": 0.2,
+          "max": 3.9,
+          "range": 3.6999999999999997,
+          "mean": 1.5214326484018266,
+          "median": 1.4,
+          "std_deviation": 0.6063534448075415,
+          "q1": 1.1,
+          "q3": 1.9,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Wind Direction": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 360.0,
+          "range": 360.0,
+          "mean": 228.4506278538813,
+          "median": 256.0,
+          "std_deviation": 85.93121429252847,
+          "q1": 197.0,
+          "q3": 283.0,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            360.0
+          ]
+        },
+        "Wind Speed": {
+          "count": 17520,
+          "min": 0.2,
+          "max": 8.0,
+          "range": 7.8,
+          "mean": 2.2745091324200915,
+          "median": 2.2,
+          "std_deviation": 0.9753168253106016,
+          "q1": 1.6,
+          "q3": 2.8,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Global Horizontal UV Irradiance (280-400nm)": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 64.0042,
+          "range": 64.0042,
+          "mean": 11.449513053652968,
+          "median": 0.0,
+          "std_deviation": 17.607318411982973,
+          "q1": 0.0,
+          "q3": 19.273200000000003,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        },
+        "Global Horizontal UV Irradiance (295-385nm)": {
+          "count": 17520,
+          "min": 0.0,
+          "max": 50.4101,
+          "range": 50.4101,
+          "mean": 8.972269092465753,
+          "median": 0.0,
+          "std_deviation": 13.836630567387603,
+          "q1": 0.0,
+          "q3": 15.0234,
+          "type": "numeric",
+          "missing_count": 0,
+          "replacement_count": 0,
+          "outlier_rule": [
+            0.0,
+            null
+          ]
+        }
+      }
+    }
+  },
+  "weather_timecorrelated": {
+    "source_path": "mlModel/dataset/139654_Weather_30m_cleaned.csv",
+    "output_path": "mlModel/dataset/139654_Weather_30m_cleaned_timecorrelated.csv",
+    "rows": 17520,
+    "hours_shift": -8,
+    "formula": "weather_local_time = weather_timestamp - 8 hours",
+    "original_start": "2006-01-01T00:00",
+    "original_end": "2006-12-31T23:30",
+    "shifted_start": "2005-12-31T16:00",
+    "shifted_end": "2006-12-31T15:30"
+  }
+}

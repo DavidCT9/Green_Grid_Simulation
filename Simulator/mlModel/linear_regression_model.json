@@ -1,0 +1,33 @@
+{
+  "model_type": "linear_regression",
+  "target_column": "capacity_factor",
+  "feature_columns": [
+    "GHI",
+    "Solar Zenith Angle"
+  ],
+  "feature_mean": [
+    202.03478481655452,
+    89.64841500571315
+  ],
+  "feature_std": [
+    291.9896644269305,
+    37.12413043165811
+  ],
+  "weights": [
+    0.21301280954665083,
+    -0.010397235667146964
+  ],
+  "bias": 0.15774781179509945,
+  "alpha": 0.1,
+  "epochs": 1000,
+  "initial_cost": 0.039203147834453375,
+  "final_cost": 0.00220500339721053,
+  "test_metrics": {
+    "test_rows": 875,
+    "mean_absolute_error": 0.03874911994864306
+  },
+  "plot_paths": {
+    "feature_slice": "mlModel/linear_regression_plot.svg",
+    "effectiveness": "mlModel/model_effectiveness_plot.svg"
+  }
+}

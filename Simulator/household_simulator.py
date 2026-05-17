@@ -91,7 +91,8 @@ class HouseholdSimulator:
                 inverter_down = self.inverter.is_down(env)
                 solar_kw = self.panel.generate(
                     sim_hour, daily_cloud_base,
-                    self.config["INVERTER_MAX_OUTPUT_LIMIT"], inverter_down
+                    self.config["INVERTER_MAX_OUTPUT_LIMIT"], inverter_down,
+                    sim_day=sim_day,
                 )
                 load_kw = self.load.demand(sim_hour, day_of_week, current_season)
                 

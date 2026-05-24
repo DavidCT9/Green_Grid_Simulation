@@ -18,7 +18,7 @@ class HouseLoad:
         elif season == "Winter":
             load *= 1.6
 
-        # Midday / afternoon dip:
+        # Midday dip:
         if 11 <= hour <= 16:
             if day_of_week >= 5:
                 load *= 0.68
@@ -47,7 +47,7 @@ class HouseLoad:
         appliances = {
             "washing_machine": (1.5, 2, 0.02),   # 1.5kW for 2 hours, 2% chance per hour
             "dishwasher": (1.2, 1.5, 0.03),      # 1.2kW for 1.5 hours, 3% chance per hour
-            "ev_charger": (7.0, 4, 0.01)         # 7kW for 4 hours, 1% chance per hour
+            "ev_charger": (7.0, 4, 0.001)         # 7kW for 4 hours, 0.1% chance per hour
         }
 
         if not hasattr(self, "_active_appliances"):

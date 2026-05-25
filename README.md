@@ -28,19 +28,25 @@ A digital twin simulation of a solar-equipped home energy system, designed to mo
 1. Ensure Python is installed.
 2. Install required packages:
    ```bash
-   pip install simpy pandas matplotlib seaborn
+   pip install simpy pandas matplotlib seaborn numpy
    ```
 
 ## Usage
 
-### 1. Run the Simulation
+### 1. Train the ML Model
+Before running the simulation, train the solar generation prediction model:
+```bash
+cd SG1_Team2/Simulator/mlModel
+python train.py
+```
+ 
+This generates the trained model used by the simulation to predict realistic solar energy output based on weather conditions.
+ 
+### 2. Run the Simulation
 Execute the main script to start the simulation:
 ```bash
 python main.py
 ```
-
-The simulation runs and saves all data to `log.csv`.
-
 ### 2. How to view the dashboard
 Go to the `Simulator/web` folder in VS Code, right-click index.html and select Open with Live Server. The dashboard will open automatically in your browser at `localhost:5500`. If you cant see this option, you need to download the Live Server extension in VS Code.
 
@@ -63,20 +69,3 @@ Go to the `Simulator/web` folder in VS Code, right-click index.html and select O
 
 Note: `config_user.json` exists in the repository but is not used by the simulation.
 
-## File Structure
-- `main.py`: Entry point, simulation loop, configuration, and logging.
-- `household_simulator.py `
-- `battery.py` / `solar_panel.py` / `inverter.py` / `grid.py` / 
-- `house_load.py`: Component models.
-- `utils.py`: Helper functions for solar/time calculations.
--  `config_default.json` `config_houses.json`
-```
-web/
-└── data/
-    ├── summary/
-    │   ├── general_info.json       # Simulation metadata
-    │   └── aggregated_data.json    # Neighborhood-level totals
-    └── logs/
-        └── house_#/
-            └── log.json            # Per-household hourly log
-```

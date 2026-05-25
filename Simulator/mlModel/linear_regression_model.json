@@ -27,7 +27,7 @@
     "mean_absolute_error": 0.03874911994864306
   },
   "plot_paths": {
-    "feature_slice": "mlModel/linear_regression_plot.svg",
-    "effectiveness": "mlModel/model_effectiveness_plot.svg"
+    "feature_slice": "mlModel\\linear_regression_plot.svg",
+    "effectiveness": "mlModel\\model_effectiveness_plot.svg"
   }
 }
